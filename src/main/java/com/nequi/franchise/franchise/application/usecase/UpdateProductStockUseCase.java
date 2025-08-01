@@ -4,7 +4,10 @@ import com.nequi.franchise.franchise.domain.model.Branch;
 import com.nequi.franchise.franchise.domain.model.Product;
 import com.nequi.franchise.franchise.domain.model.valueobject.Stock;
 import com.nequi.franchise.franchise.domain.repository.FranchiseRepository;
-import com.nequi.franchise.franchise.adapter.rest.dto.FranchiseResponse;
+import com.nequi.franchise.franchise.entrypoint.rest.dto.FranchiseResponse;
+import com.nequi.franchise.franchise.entrypoint.rest.exception.BranchNotFoundException;
+import com.nequi.franchise.franchise.entrypoint.rest.exception.FranchiseNotFoundException;
+import com.nequi.franchise.franchise.entrypoint.rest.exception.ProductNotFoundException;
 import reactor.core.publisher.Mono;
 import org.springframework.stereotype.Service;
 
@@ -18,12 +21,12 @@ public class UpdateProductStockUseCase {
 
     public Mono<FranchiseResponse> execute(String franchiseId, String branchId, String productId, int newStock) {
         return franchiseRepository.findById(franchiseId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Franchise not found")))
+                .switchIfEmpty(Mono.error(new FranchiseNotFoundException("Franquicia no encontrada")))
                 .map(franchise -> {
                     Branch branch = franchise.findBranchById(branchId)
-                            .orElseThrow(() -> new IllegalArgumentException("Branch not found"));
+                            .orElseThrow(() -> new BranchNotFoundException("Sucursal no encontrada"));
                     Product product = branch.findProductById(productId)
-                            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                            .orElseThrow(() -> new ProductNotFoundException("Producto no encontrado"));
                     product.updateStock(new Stock(newStock));
                     return franchise;
                 })

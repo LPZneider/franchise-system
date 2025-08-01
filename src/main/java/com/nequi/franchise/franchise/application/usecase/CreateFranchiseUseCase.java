@@ -1,7 +1,7 @@
 package com.nequi.franchise.franchise.application.usecase;
 
-import com.nequi.franchise.franchise.adapter.rest.dto.CreateFranchiseRequest;
-import com.nequi.franchise.franchise.adapter.rest.dto.FranchiseResponse;
+import com.nequi.franchise.franchise.entrypoint.rest.dto.CreateFranchiseRequest;
+import com.nequi.franchise.franchise.entrypoint.rest.dto.FranchiseResponse;
 import com.nequi.franchise.franchise.domain.factory.FranchiseFactory;
 import com.nequi.franchise.franchise.domain.model.Franchise;
 import com.nequi.franchise.franchise.domain.repository.FranchiseRepository;
