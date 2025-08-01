@@ -2,10 +2,12 @@ package com.nequi.franchise.franchise.application.usecase;
 
 import com.nequi.franchise.franchise.domain.repository.FranchiseRepository;
 import com.nequi.franchise.franchise.domain.service.ProductStockService;
-import com.nequi.franchise.franchise.adapter.rest.dto.TopProductResponse;
+import com.nequi.franchise.franchise.entrypoint.rest.dto.TopProductResponse;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import java.util.List;
 
+@Service
 public class GetTopStockProductsByBranchUseCase {
     private final FranchiseRepository franchiseRepository;
     private final ProductStockService productStockService;
