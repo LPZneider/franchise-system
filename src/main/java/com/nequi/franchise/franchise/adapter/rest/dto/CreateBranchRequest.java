@@ -6,14 +6,14 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class CreateFranchiseRequest {
-
-    @NotBlank(message = "Name is required")
+public class CreateBranchRequest {
+    @NotBlank(message = "Branch name is required")
     private String name;
 
-    public CreateFranchiseRequest() {}
+    public CreateBranchRequest() {
+    }
 
-    public CreateFranchiseRequest(String name) {
+    public CreateBranchRequest(String name) {
         this.name = name;
     }
 
