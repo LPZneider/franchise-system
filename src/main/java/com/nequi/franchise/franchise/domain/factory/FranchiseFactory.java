@@ -5,7 +5,9 @@ import com.nequi.franchise.franchise.domain.model.Franchise;
 import com.nequi.franchise.franchise.domain.model.Product;
 import com.nequi.franchise.franchise.domain.model.valueobject.Name;
 import com.nequi.franchise.franchise.domain.model.valueobject.Stock;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FranchiseFactory {
     public Franchise createFranchise(String id, String name) {
         return new Franchise(id, new Name(name));
