@@ -1,4 +1,4 @@
-package com.nequi.franchise.franchise.adapter.rest.dto;
+package com.nequi.franchise.franchise.entrypoint.rest.dto;
 
 import lombok.Getter;
 import lombok.Setter;

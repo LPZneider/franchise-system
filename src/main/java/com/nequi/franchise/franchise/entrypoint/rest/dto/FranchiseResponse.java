@@ -1,4 +1,4 @@
-package com.nequi.franchise.franchise.adapter.rest.dto;
+package com.nequi.franchise.franchise.entrypoint.rest.dto;
 
 public class FranchiseResponse {
 
