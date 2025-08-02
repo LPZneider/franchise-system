@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import java.util.List;
 
+import static com.nequi.franchise.franchise.entrypoint.rest.exception.ExceptionMessage.FRANCHISE_NOT_FOUND;
+
 @Service
 public class GetTopStockProductsByBranchUseCase {
     private final FranchiseRepository franchiseRepository;
@@ -20,7 +22,7 @@ public class GetTopStockProductsByBranchUseCase {
 
     public Mono<List<TopProductResponse>> execute(String franchiseId) {
         return franchiseRepository.findById(franchiseId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Franchise not found")))
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(FRANCHISE_NOT_FOUND.getMessage())))
                 .map(productStockService::findTopStockPerBranch)
                 .map(map -> map.entrySet().stream()
                         .map(entry -> new TopProductResponse(

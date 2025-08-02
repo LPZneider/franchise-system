@@ -1,10 +1,10 @@
 package com.nequi.franchise.franchise.infrastructure.mapper;
 
 import com.nequi.franchise.franchise.domain.model.Branch;
-import com.nequi.franchise.franchise.domain.model.Product;
 import com.nequi.franchise.franchise.domain.model.valueobject.Name;
 import com.nequi.franchise.franchise.infrastructure.persistence.entity.BranchEntity;
 import com.nequi.franchise.franchise.infrastructure.persistence.entity.ProductEntity;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
