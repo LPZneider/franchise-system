@@ -2,12 +2,13 @@ package com.nequi.franchise.franchise.domain.model;
 
 import com.nequi.franchise.franchise.domain.model.valueobject.Name;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+@ToString
 public class Branch {
     @Getter
     private final String id;
@@ -38,7 +39,7 @@ public class Branch {
     }
 
     public List<Product> getProducts() {
-        return Collections.unmodifiableList(products);
+        return new ArrayList<>(products);
     }
 
 }

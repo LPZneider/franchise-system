@@ -2,7 +2,9 @@ package com.nequi.franchise.franchise.domain.model;
 
 import com.nequi.franchise.franchise.domain.model.valueobject.Name;
 import com.nequi.franchise.franchise.domain.model.valueobject.Stock;
+import lombok.ToString;
 
+@ToString
 public class Product {
     private final String id;
     private Name name;
@@ -22,7 +24,15 @@ public class Product {
         this.stock = newStock;
     }
 
-    public String getId() { return id; }
-    public Name getName() { return name; }
-    public Stock getStock() { return stock; }
+    public String getId() {
+        return id;
+    }
+
+    public Name getName() {
+        return name;
+    }
+
+    public Stock getStock() {
+        return stock;
+    }
 }

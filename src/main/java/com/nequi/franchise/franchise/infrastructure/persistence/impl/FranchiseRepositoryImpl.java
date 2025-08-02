@@ -13,31 +13,28 @@ import reactor.core.publisher.Mono;
 public class FranchiseRepositoryImpl implements FranchiseRepository {
 
     private final FranchiseReactiveMongoRepository mongoRepository;
-    private final FranchiseMapper mapper;
 
-    public FranchiseRepositoryImpl(FranchiseReactiveMongoRepository mongoRepository,
-                                   FranchiseMapper mapper) {
+    public FranchiseRepositoryImpl(FranchiseReactiveMongoRepository mongoRepository) {
         this.mongoRepository = mongoRepository;
-        this.mapper = mapper;
     }
 
     @Override
     public Mono<Franchise> findById(String id) {
         return mongoRepository.findById(id)
-                .map(mapper::toDomain);
+                .map(FranchiseMapper::toDomain);
     }
 
     @Override
     public Flux<Franchise> findAll() {
         return mongoRepository.findAll()
-                .map(mapper::toDomain);
+                .map(FranchiseMapper::toDomain);
     }
 
     @Override
     public Mono<Franchise> save(Franchise franchise) {
-        FranchiseEntity entity = mapper.toEntity(franchise);
+        FranchiseEntity entity = FranchiseMapper.toEntity(franchise);
         return mongoRepository.save(entity)
-                .map(mapper::toDomain);
+                .map(FranchiseMapper::toDomain);
     }
 
     @Override
