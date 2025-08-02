@@ -42,7 +42,7 @@ public class FranchiseHandler {
     public Mono<ServerResponse> getFranchise(ServerRequest request) {
         String id = request.pathVariable("id");
         return franchiseRepository.findById(id)
-                .map(f -> new FranchiseResponse(f.getId(), f.getName().getValue()))
+                .map(f -> new FranchiseResponse(f.getId(), f.getName().getValue(), f.getBranches()))
                 .flatMap(franchiseResponse -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(franchiseResponse))

@@ -8,6 +8,8 @@ import com.nequi.franchise.franchise.entrypoint.rest.exception.BranchNotFoundExc
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 public class UpdateBranchNameUseCase {
     private final FranchiseRepository franchiseRepository;
@@ -26,7 +28,15 @@ public class UpdateBranchNameUseCase {
                     return franchise;
                 })
                 .flatMap(franchiseRepository::save)
-                .map(f -> new FranchiseResponse(f.getId(), f.getName().getValue()));
+                .map(f -> new FranchiseResponse(
+                        f.getId(),
+                        f.getName().getValue(),
+                        f.getBranches().stream()
+                                .filter(branch -> branch.getId().equals(branchId))
+                                .findFirst()
+                                .map(List::of)
+                                .orElseThrow(() -> new BranchNotFoundException("Sucursal no encontrada"))
+                ));
     }
 }
 

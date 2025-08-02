@@ -31,7 +31,7 @@ public class AddBranchToFranchiseUseCase {
                     return franchise;
                 })
                 .flatMap(franchiseRepository::save)
-                .map(franquicia -> new FranchiseResponse(franquicia.getId(), franquicia.getName().getValue()));
+                .map(franquicia -> new FranchiseResponse(franquicia.getId(), franquicia.getName().getValue(), franquicia.getBranches()));
 
     }
 }
