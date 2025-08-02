@@ -3,6 +3,7 @@ package com.nequi.franchise.franchise.domain.model.valueobject;
 import java.util.Objects;
 
 public class Name {
+
     private final String value;
 
     public Name(String value) {
@@ -25,4 +26,10 @@ public class Name {
     public int hashCode() {
         return Objects.hash(value);
     }
+
+    @Override
+    public String toString() {
+        return value;
+    }
+
 }

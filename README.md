@@ -121,274 +121,241 @@ Sistema de gestión de franquicias desarrollado con **Spring Boot WebFlux** que 
 
 ### Prerrequisitos
 ```bash
-- Java 17+
+- Java 21+
 - Maven 3.8+
-- MongoDB 4.4+
-- Docker (opcional)
+- MongoDB 7.0+ (para desarrollo local)
+- Docker & Docker Compose (recomendado)
 ```
 
-### Ejecución Local
+### 🏠 Ejecución Local (Desarrollo)
 
-1. **Clonar el repositorio**
+#### 1. Clonar el repositorio
 ```bash
-git clone <repository-url>
+git clone https://github.com/LPZneider/franchise-system.git
 cd franchise-system
 ```
 
-2. **Configurar MongoDB**
-```yaml
-# application.properties
-spring.data.mongodb.host=localhost
-spring.data.mongodb.port=27017
-spring.data.mongodb.database=franchise_system
+#### 2. Levantar MongoDB para desarrollo local
+```bash
+# Opción 1: Docker (Recomendado)
+docker run -d --name mongodb -p 27017:27017 mongo:latest
+
+# Opción 2: Docker con autenticación
+docker run -d --name mongodb \
+  -p 27017:27017 \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=admin123 \
+  mongo:7.0
 ```
 
-3. **Ejecutar la aplicación**
+#### 3. Ejecutar la aplicación
 ```bash
+# Compilar y ejecutar
 mvn spring-boot:run
+
+# O ejecutar directamente el JAR
+mvn clean package
+java -jar target/franchise-system-0.0.1-SNAPSHOT.jar
 ```
 
-4. **Verificar salud de la aplicación**
+#### 4. Verificar la aplicación
 ```bash
-curl http://localhost:8080/actuator/health
+curl http://localhost:8001/actuator/health
 ```
 
-### 🐳 Ejecución con Docker
+### 🐳 Ejecución con Docker (Producción)
 
+#### Multi-stage Dockerfile optimizado
 ```dockerfile
-# Dockerfile incluido en el proyecto
-FROM openjdk:17-jdk-slim
-VOLUME /tmp
-COPY target/franchise-system-1.0.0.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+# Multi-stage build para optimizar tamaño de imagen
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /app
+COPY .mvn ./.mvn
+COPY mvnw .
+COPY pom.xml .
+RUN chmod +x ./mvnw
+RUN ./mvnw dependency:go-offline -B
+COPY src ./src
+RUN ./mvnw clean package -DskipTests
+
+# Imagen de producción
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+RUN mkdir ./logs
+COPY --from=builder /app/target/franchise-system-0.0.1-SNAPSHOT.jar app.jar
+EXPOSE 8001
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8001/actuator/health || exit 1
+ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
+#### Construcción de la imagen
 ```bash
 # Construir imagen
-docker build -t franchise-system .
+docker build -t franchise-system:latest .
 
-# Ejecutar contenedor
-docker run -p 8080:8080 franchise-system
+# Ejecutar contenedor individual
+docker run -d \
+  --name franchise-app \
+  -p 8001:8001 \
+  -e SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017/franchise_system \
+  franchise-system:latest
 ```
 
-### Docker Compose (con MongoDB)
+### 🐳 Docker Compose (Ambiente Completo)
 
+#### Levantar todo el stack
+```bash
+# Levantar servicios en background
+docker-compose up -d
+
+# Ver logs en tiempo real
+docker-compose logs -f
+
+# Verificar estado de los servicios
+docker-compose ps
+```
+
+#### Configuración completa (docker-compose.yml)
 ```yaml
 version: '3.8'
+
 services:
   mongodb:
-    image: mongo:4.4
+    image: mongo:7.0
+    container_name: franchise-mongodb
+    restart: always
     ports:
       - "27017:27017"
     environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
       MONGO_INITDB_DATABASE: franchise_system
-  
+    volumes:
+      - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - franchise-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   franchise-app:
     build: .
+    container_name: franchise-system
+    restart: always
     ports:
-      - "8080:8080"
-    depends_on:
-      - mongodb
+      - "8001:8001"
     environment:
-      SPRING_DATA_MONGODB_HOST: mongodb
+      SPRING_DATA_MONGODB_URI: mongodb://admin:admin123@mongodb:27017/franchise_system?authSource=admin
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8001
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - franchise-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  franchise-network:
+    driver: bridge
 ```
 
-## 📚 Documentación de API
-
-### Crear Franquicia
-```http
-POST /api/v1/franchises
-Content-Type: application/json
-
-{
-  "name": "Mi Franquicia"
-}
-```
-
-### Agregar Sucursal
-```http
-POST /api/v1/franchises/{franchiseId}/branches
-Content-Type: application/json
-
-{
-  "name": "Sucursal Centro"
-}
-```
-
-### Agregar Producto
-```http
-POST /api/v1/franchises/{franchiseId}/branches/{branchId}/products
-Content-Type: application/json
-
-{
-  "name": "Producto Premium",
-  "stock": 100
-}
-```
-
-### Top Productos por Stock
-```http
-GET /api/v1/franchises/{franchiseId}/top-stock-products
-
-Response:
-[
-  {
-    "branchId": "branch-1",
-    "productId": "product-1",
-    "productName": "Producto Premium",
-    "stock": 150
-  }
-]
-```
-
-## 🧪 Testing
-
-### Ejecutar Tests
+#### Comandos útiles de Docker Compose
 ```bash
-# Todos los tests
+# Levantar servicios
+docker-compose up -d
+
+# Parar servicios
+docker-compose down
+
+# Parar y eliminar volúmenes
+docker-compose down -v
+
+# Reconstruir imágenes
+docker-compose up --build
+
+# Ver logs de un servicio específico
+docker-compose logs -f franchise-app
+```
+
+### 🧪 Testing
+
+#### Prerrequisitos para Tests
+**IMPORTANTE**: Para ejecutar los tests localmente necesitas MongoDB ejecutándose:
+
+```bash
+# Levantar MongoDB para tests
+docker run -d --name mongodb-test -p 27017:27017 mongo:latest
+
+# Verificar que MongoDB esté corriendo
+docker ps | grep mongodb-test
+```
+
+#### Ejecutar Tests
+```bash
+# Todos los tests (requiere MongoDB en puerto 27017)
 mvn test
 
 # Tests específicos
 mvn test -Dtest=FranchiseHandlerTest
 
+# Tests con perfil específico
+mvn test -Dspring.profiles.active=test
+
 # Con reporte de cobertura
 mvn test jacoco:report
+
+# Solo tests unitarios (no requieren MongoDB)
+mvn test -Dtest="**/*UseCaseTest,**/*Test" -Dtest.skip.integration=true
 ```
 
-### Cobertura de Tests
-- **Tests de Integración**: 19 tests
-- **Cobertura Funcional**: 100%
-- **Tests Unitarios**: Use Cases
-- **Tests E2E**: Handlers con WebTestClient
+### 🔧 Perfiles de Configuración
 
-## 🔧 Configuración
-
-### Perfiles de Aplicación
-
-#### application.properties (Desarrollo)
+#### application.properties (Desarrollo Local)
 ```properties
-spring.data.mongodb.host=localhost
-spring.data.mongodb.port=27017
-spring.data.mongodb.database=franchise_system
+spring.application.name=franchise-system
+server.port=8001
+spring.data.mongodb.uri=mongodb://localhost:27017/franchise_system
+spring.data.mongodb.auto-index-creation=true
 logging.level.com.nequi.franchise=DEBUG
 ```
 
-#### application-prod.properties (Producción)
+#### application-docker.properties (Docker)
 ```properties
-spring.data.mongodb.uri=${MONGODB_URI}
-logging.level.root=WARN
+spring.data.mongodb.uri=mongodb://admin:admin123@mongodb:27017/franchise_system?authSource=admin
+spring.data.mongodb.auto-index-creation=true
 logging.level.com.nequi.franchise=INFO
+server.port=8001
+server.shutdown=graceful
+management.endpoints.web.exposure.include=health,info,metrics
 ```
 
-### Variables de Entorno
+### 🚀 Despliegue en Producción
+
+#### Variables de Entorno Requeridas
 ```bash
-export MONGODB_URI="mongodb://user:pass@host:port/database"
-export SERVER_PORT=8080
-export LOGGING_LEVEL=INFO
+export SPRING_DATA_MONGODB_URI="mongodb://user:pass@host:port/database?authSource=admin"
+export SERVER_PORT=8001
+export SPRING_PROFILES_ACTIVE=prod
+export LOGGING_LEVEL_COM_NEQUI_FRANCHISE=INFO
 ```
 
-## 📈 Métricas y Monitoreo
-
-### Actuator Endpoints
-- `/actuator/health` - Salud de la aplicación
-- `/actuator/metrics` - Métricas de performance
-- `/actuator/prometheus` - Métricas para Prometheus
-
-### Logging Estructurado
-```java
-[INFO] [USECASE] Entering: CreateFranchiseUseCase.execute with arguments: [CreateFranchiseRequest(name=Test)]
-[INFO] [REPOSITORY] Entering: FranchiseRepository.save with arguments: [Franchise(id=123)]
-[INFO] [HANDLER] Exiting: FranchiseHandler.createFranchise with result: FranchiseResponse(id=123)
-```
-
-## 🔒 Seguridad y Mejores Prácticas
-
-### Implementadas
-- ✅ **Validación de entrada** en DTOs
-- ✅ **Manejo centralizado de errores**
-- ✅ **Logging estructurado** con AspectJ
-- ✅ **Separación de capas** estricta
-- ✅ **Principios SOLID** aplicados
-
-### Recomendaciones Futuras
-- 🔲 Autenticación con JWT
-- 🔲 Rate Limiting
-- 🔲 Validación con Bean Validation
-- 🔲 Circuit Breaker pattern
-- 🔲 Health Checks personalizados
-
-## 🚀 Performance
-
-### Ventajas Reactivas Medidas
-- **Throughput**: +300% vs arquitectura blocking
-- **Latencia**: -50% en operaciones I/O intensivas
-- **Memoria**: -40% uso de heap por request
-- **Threads**: 10 threads vs 200+ en blocking
-
-### Optimizaciones Implementadas
-- **Connection Pooling** reactivo
-- **Backpressure** automático
-- **Streaming** de respuestas grandes
-- **Caching** a nivel de dominio
-
-## 🤝 Contribución
-
-### Guías de Desarrollo
-1. **Seguir Clean Architecture**: Respetar las capas definidas
-2. **Tests First**: Escribir tests antes que funcionalidad
-3. **Reactive Patterns**: Usar Mono/Flux apropiadamente
-4. **Domain Driven Design**: Enriquecer el modelo de dominio
-
-### Estructura de Commits
+#### Health Checks
 ```bash
-feat(franchise): add franchise creation endpoint
-fix(product): resolve stock validation issue
-docs(readme): update API documentation
-test(handler): add integration tests for product endpoints
+# Verificar salud de la aplicación
+curl http://localhost:8001/actuator/health
+
+# Métricas de la aplicación
+curl http://localhost:8001/actuator/metrics
+
+# Info de la aplicación
+curl http://localhost:8001/actuator/info
 ```
 
-## 📞 Soporte
-
-### Logs y Debugging
-```bash
-# Habilitar debug mode
-java -jar app.jar --debug
-
-# Ver logs específicos
-tail -f logs/franchise-system.log | grep ERROR
-```
-
-### Troubleshooting Común
-- **MongoDB Connection**: Verificar connectivity y credenciales
-- **Port Conflicts**: Cambiar puerto con `--server.port=8081`
-- **Memory Issues**: Ajustar JVM con `-Xmx512m`
-
----
-
-## 🏆 ¿Por qué esta Arquitectura?
-
-### 1. **Mantenibilidad Extrema**
-- Cambios aislados por capa
-- Testing independiente
-- Fácil refactoring
-
-### 2. **Performance Superior**
-- Reactive streams para alta concurrencia
-- Non-blocking I/O
-- Efficient resource utilization
-
-### 3. **Escalabilidad Natural**
-- Horizontal scaling ready
-- Stateless design
-- Container-friendly
-
-### 4. **Calidad Empresarial**
-- Patrones probados en producción
-- Observabilidad built-in
-- Error handling robusto
-
-**Esta arquitectura representa el estado del arte en desarrollo de aplicaciones Java modernas, combinando lo mejor de Clean Architecture con la potencia de la programación reactiva.**
-
----
-
-*Desarrollado con ❤️ usando Spring Boot WebFlux y Clean Architecture*
