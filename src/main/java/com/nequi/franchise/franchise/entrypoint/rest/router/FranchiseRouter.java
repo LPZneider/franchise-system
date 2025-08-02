@@ -18,8 +18,9 @@ public class FranchiseRouter {
     public RouterFunction<ServerResponse> franchiseRoutes(FranchiseHandler handler) {
         return RouterFunctions.route()
                 // Franchise operations
-                .POST(API_BASE_PATH + "/franchises", handler::createFranchise)
+                .GET(API_BASE_PATH + "/franchises", handler::getAllFranchises)
                 .GET(API_BASE_PATH + "/franchises/{id}", handler::getFranchise)
+                .POST(API_BASE_PATH + "/franchises", handler::createFranchise)
                 .PATCH(API_BASE_PATH + "/franchises/{id}", handler::updateFranchiseName)
 
                 // Branch operations

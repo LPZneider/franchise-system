@@ -2,6 +2,7 @@ package com.nequi.franchise.franchise.entrypoint.rest.handler;
 
 import com.nequi.franchise.franchise.application.usecase.AddBranchToFranchiseUseCase;
 import com.nequi.franchise.franchise.application.usecase.CreateFranchiseUseCase;
+import com.nequi.franchise.franchise.application.usecase.GetAllFranchisesUseCase;
 import com.nequi.franchise.franchise.application.usecase.GetFranchiseUseCase;
 import com.nequi.franchise.franchise.application.usecase.UpdateFranchiseNameUseCase;
 import com.nequi.franchise.franchise.entrypoint.rest.dto.CreateBranchRequest;
@@ -18,15 +19,18 @@ public class FranchiseHandler {
 
     private final CreateFranchiseUseCase createFranchiseUseCase;
     private final GetFranchiseUseCase getFranchiseUseCase;
+    private final GetAllFranchisesUseCase getAllFranchisesUseCase;
     private final AddBranchToFranchiseUseCase addBranchToFranchiseUseCase;
     private final UpdateFranchiseNameUseCase updateFranchiseNameUseCase;
 
     public FranchiseHandler(CreateFranchiseUseCase createFranchiseUseCase,
                             GetFranchiseUseCase getFranchiseUseCase,
+                            GetAllFranchisesUseCase getAllFranchisesUseCase,
                             AddBranchToFranchiseUseCase addBranchToFranchiseUseCase,
                             UpdateFranchiseNameUseCase updateFranchiseNameUseCase) {
         this.createFranchiseUseCase = createFranchiseUseCase;
         this.getFranchiseUseCase = getFranchiseUseCase;
+        this.getAllFranchisesUseCase = getAllFranchisesUseCase;
         this.addBranchToFranchiseUseCase = addBranchToFranchiseUseCase;
         this.updateFranchiseNameUseCase = updateFranchiseNameUseCase;
     }
@@ -66,6 +70,15 @@ public class FranchiseHandler {
                 .flatMap(franchiseResponse -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(franchiseResponse))
+                .onErrorResume(this::handleError);
+    }
+
+    public Mono<ServerResponse> getAllFranchises(ServerRequest request) {
+        return getAllFranchisesUseCase.execute()
+                .collectList()
+                .flatMap(franchises -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(franchises))
                 .onErrorResume(this::handleError);
     }
 
