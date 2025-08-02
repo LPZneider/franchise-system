@@ -1,9 +1,16 @@
 package com.nequi.franchise.franchise.entrypoint.rest.dto;
 
+import com.nequi.franchise.franchise.domain.model.Branch;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
 public class FranchiseResponse {
 
     private String id;
     private String name;
+    private List<Branch> branches;
 
     public FranchiseResponse() {}
 
@@ -11,20 +18,9 @@ public class FranchiseResponse {
         this.id = id;
         this.name = name;
     }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setId(String id) {
+    public FranchiseResponse(String id, String name, List<Branch> branches) {
         this.id = id;
-    }
-
-    public void setName(String name) {
         this.name = name;
+        this.branches = branches;
     }
 }

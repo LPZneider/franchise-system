@@ -11,6 +11,8 @@ import com.nequi.franchise.franchise.entrypoint.rest.exception.ProductNotFoundEx
 import reactor.core.publisher.Mono;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UpdateProductStockUseCase {
     private final FranchiseRepository franchiseRepository;
@@ -31,6 +33,14 @@ public class UpdateProductStockUseCase {
                     return franchise;
                 })
                 .flatMap(franchiseRepository::save)
-                .map(f -> new FranchiseResponse(f.getId(), f.getName().getValue()));
+                .map(f -> new FranchiseResponse(
+                        f.getId(),
+                        f.getName().getValue(),
+                        f.getBranches().stream()
+                                .filter(branch -> branch.getId().equals(branchId))
+                                .findFirst()
+                                .map(List::of)
+                                .orElseThrow(() -> new BranchNotFoundException("Sucursal no encontrada"))
+                ));
     }
 }
