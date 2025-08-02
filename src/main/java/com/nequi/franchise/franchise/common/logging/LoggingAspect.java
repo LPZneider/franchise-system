@@ -14,7 +14,7 @@ public class LoggingAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
 
-    // Casos de uso (application/usecase)
+    // Use cases (application/usecase)
     @Pointcut("within(com.nequi.franchise.franchise.application.usecase..*)")
     public void useCaseLayer() {}
 
@@ -22,50 +22,49 @@ public class LoggingAspect {
     @Pointcut("within(com.nequi.franchise.franchise.entrypoint.rest.handler..*)")
     public void handlerLayer() {}
 
-    // Repositorios (domain/repository y infrastructure/persistence/impl)
+    // Repositories (domain/repository and infrastructure/persistence/impl)
     @Pointcut("within(com.nequi.franchise.franchise.domain.repository..*) || within(com.nequi.franchise.franchise.infrastructure.persistence.impl..*)")
     public void repositoryLayer() {}
 
-    // Log entrada y salida de métodos de casos de uso
+    // Log entry and exit of use case methods
     @Around("useCaseLayer()")
     public Object logUseCase(ProceedingJoinPoint joinPoint) throws Throwable {
-        logger.info("[USECASE] Entrando a: {} con argumentos: {}", joinPoint.getSignature(), Arrays.toString(joinPoint.getArgs()));
+        logger.info("[USECASE] Entering: {} with arguments: {}", joinPoint.getSignature(), Arrays.toString(joinPoint.getArgs()));
         try {
             Object result = joinPoint.proceed();
-            logger.info("[USECASE] Saliendo de: {} con resultado: {}", joinPoint.getSignature(), result);
+            logger.info("[USECASE] Exiting: {} with result: {}", joinPoint.getSignature(), result);
             return result;
         } catch (Throwable ex) {
-            logger.error("[USECASE] Excepción en: {}: {}", joinPoint.getSignature(), ex.getMessage(), ex);
+            logger.error("[USECASE] Exception in: {}: {}", joinPoint.getSignature(), ex.getMessage(), ex);
             throw ex;
         }
     }
 
-    // Log entrada y salida de métodos de handlers
+    // Log entry and exit of handler methods
     @Around("handlerLayer()")
     public Object logHandler(ProceedingJoinPoint joinPoint) throws Throwable {
-        logger.info("[HANDLER] Entrando a: {} con argumentos: {}", joinPoint.getSignature(), Arrays.toString(joinPoint.getArgs()));
+        logger.info("[HANDLER] Entering: {} with arguments: {}", joinPoint.getSignature(), Arrays.toString(joinPoint.getArgs()));
         try {
             Object result = joinPoint.proceed();
-            logger.info("[HANDLER] Saliendo de: {} con resultado: {}", joinPoint.getSignature(), result);
+            logger.info("[HANDLER] Exiting: {} with result: {}", joinPoint.getSignature(), result);
             return result;
         } catch (Throwable ex) {
-            logger.error("[HANDLER] Excepción en: {}: {}", joinPoint.getSignature(), ex.getMessage(), ex);
+            logger.error("[HANDLER] Exception in: {}: {}", joinPoint.getSignature(), ex.getMessage(), ex);
             throw ex;
         }
     }
 
-    // Log entrada y salida de métodos de repositorios
+    // Log entry and exit of repository methods
     @Around("repositoryLayer()")
     public Object logRepository(ProceedingJoinPoint joinPoint) throws Throwable {
-        logger.debug("[REPOSITORY] Entrando a: {} con argumentos: {}", joinPoint.getSignature(), Arrays.toString(joinPoint.getArgs()));
+        logger.debug("[REPOSITORY] Entering: {} with arguments: {}", joinPoint.getSignature(), Arrays.toString(joinPoint.getArgs()));
         try {
             Object result = joinPoint.proceed();
-            logger.debug("[REPOSITORY] Saliendo de: {} con resultado: {}", joinPoint.getSignature(), result);
+            logger.debug("[REPOSITORY] Exiting: {} with result: {}", joinPoint.getSignature(), result);
             return result;
         } catch (Throwable ex) {
-            logger.error("[REPOSITORY] Excepción en: {}: {}", joinPoint.getSignature(), ex.getMessage(), ex);
+            logger.error("[REPOSITORY] Exception in: {}: {}", joinPoint.getSignature(), ex.getMessage(), ex);
             throw ex;
         }
     }
 }
-

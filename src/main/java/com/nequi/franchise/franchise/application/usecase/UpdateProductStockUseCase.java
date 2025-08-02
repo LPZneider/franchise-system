@@ -1,17 +1,19 @@
 package com.nequi.franchise.franchise.application.usecase;
 
 import com.nequi.franchise.franchise.domain.model.Branch;
+import com.nequi.franchise.franchise.domain.model.Franchise;
 import com.nequi.franchise.franchise.domain.model.Product;
 import com.nequi.franchise.franchise.domain.model.valueobject.Stock;
 import com.nequi.franchise.franchise.domain.repository.FranchiseRepository;
-import com.nequi.franchise.franchise.entrypoint.rest.dto.FranchiseResponse;
+import com.nequi.franchise.franchise.entrypoint.rest.dto.ProductResponse;
 import com.nequi.franchise.franchise.entrypoint.rest.exception.BranchNotFoundException;
 import com.nequi.franchise.franchise.entrypoint.rest.exception.FranchiseNotFoundException;
 import com.nequi.franchise.franchise.entrypoint.rest.exception.ProductNotFoundException;
-import reactor.core.publisher.Mono;
+import com.nequi.franchise.franchise.infrastructure.mapper.ProductResponseMapper;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
+import static com.nequi.franchise.franchise.entrypoint.rest.exception.ExceptionMessage.*;
 
 @Service
 public class UpdateProductStockUseCase {
@@ -21,26 +23,21 @@ public class UpdateProductStockUseCase {
         this.franchiseRepository = franchiseRepository;
     }
 
-    public Mono<FranchiseResponse> execute(String franchiseId, String branchId, String productId, int newStock) {
+    public Mono<ProductResponse> execute(String franchiseId, String branchId, String productId, int newStock) {
         return franchiseRepository.findById(franchiseId)
-                .switchIfEmpty(Mono.error(new FranchiseNotFoundException("Franquicia no encontrada")))
-                .map(franchise -> {
+                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(FRANCHISE_NOT_FOUND.getMessage())))
+                .flatMap(franchise -> {
                     Branch branch = franchise.findBranchById(branchId)
-                            .orElseThrow(() -> new BranchNotFoundException("Sucursal no encontrada"));
+                            .orElseThrow(() -> new BranchNotFoundException(BRANCH_NOT_FOUND.getMessage()));
+
                     Product product = branch.findProductById(productId)
-                            .orElseThrow(() -> new ProductNotFoundException("Producto no encontrado"));
+                            .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND.getMessage()));
+
                     product.updateStock(new Stock(newStock));
-                    return franchise;
+
+                    return franchiseRepository.save(franchise)
+                            .thenReturn(product);
                 })
-                .flatMap(franchiseRepository::save)
-                .map(f -> new FranchiseResponse(
-                        f.getId(),
-                        f.getName().getValue(),
-                        f.getBranches().stream()
-                                .filter(branch -> branch.getId().equals(branchId))
-                                .findFirst()
-                                .map(List::of)
-                                .orElseThrow(() -> new BranchNotFoundException("Sucursal no encontrada"))
-                ));
+                .map(product -> ProductResponseMapper.toResponse(product, branchId));
     }
 }

@@ -24,3 +24,4 @@ public interface ProductMapper {
         return entity;
     }
 }
+

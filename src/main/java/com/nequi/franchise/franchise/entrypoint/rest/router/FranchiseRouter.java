@@ -12,37 +12,51 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 @Configuration
 public class FranchiseRouter {
 
+    private static final String API_BASE_PATH = "/api/v1";
+
     @Bean
     public RouterFunction<ServerResponse> franchiseRoutes(FranchiseHandler handler) {
         return RouterFunctions.route()
-                .POST("/franchises", handler::createFranchise)
-                .GET("/franchises/{id}", handler::getFranchise)
-                .POST("/franchises/{id}/branches", handler::addBranch)
-                .PUT("/franchises/{id}/name", handler::updateFranchiseName)
+                // Franchise operations
+                .POST(API_BASE_PATH + "/franchises", handler::createFranchise)
+                .GET(API_BASE_PATH + "/franchises/{id}", handler::getFranchise)
+                .PATCH(API_BASE_PATH + "/franchises/{id}", handler::updateFranchiseName)
+
+                // Branch operations
+                .POST(API_BASE_PATH + "/franchises/{id}/branches", handler::addBranch)
                 .build();
     }
 
     @Bean
     public RouterFunction<ServerResponse> branchRoutes(BranchHandler handler) {
         return RouterFunctions.route()
-                .POST("/franchises/{franchiseId}/branches/{branchId}/products", handler::addProduct)
-                .PUT("/franchises/{franchiseId}/branches/{branchId}/products/{productId}/stock", handler::updateProductStock)
-                .PUT("/franchises/{franchiseId}/branches/{branchId}/name", handler::updateBranchName)
-                .DELETE("/franchises/{franchiseId}/branches/{branchId}/products/{productId}", handler::removeProduct)
-                .build();
-    }
+                // Branch operations
+                .PATCH(API_BASE_PATH + "/franchises/{franchiseId}/branches/{branchId}", handler::updateBranchName)
 
-    @Bean
-    public RouterFunction<ServerResponse> topProductsRoutes(ProductHandler handler) {
-        return RouterFunctions.route()
-            .GET("/franchises/{franchiseId}/top-products", handler::getTopStockProductsByBranch)
-            .build();
+                // Product operations within branches
+                .POST(API_BASE_PATH + "/franchises/{franchiseId}/branches/{branchId}/products", handler::addProduct)
+                .PATCH(API_BASE_PATH + "/franchises/{franchiseId}/branches/{branchId}/products/{productId}/stock", handler::updateProductStock)
+                .DELETE(API_BASE_PATH + "/franchises/{franchiseId}/branches/{branchId}/products/{productId}", handler::removeProduct)
+                .build();
     }
 
     @Bean
     public RouterFunction<ServerResponse> productRoutes(ProductHandler handler) {
         return RouterFunctions.route()
-            .PUT("/franchises/{franchiseId}/branches/{branchId}/products/{productId}/name", handler::updateProductName)
-            .build();
+                // Product operations
+                .PATCH(API_BASE_PATH + "/franchises/{franchiseId}/branches/{branchId}/products/{productId}", handler::updateProductName)
+
+                // Product queries
+                .GET(API_BASE_PATH + "/franchises/{franchiseId}/top-stock-products", handler::getTopStockProductsByBranch)
+                .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> allRoutes(RouterFunction<ServerResponse> franchiseRoutes,
+                                                    RouterFunction<ServerResponse> branchRoutes,
+                                                    RouterFunction<ServerResponse> productRoutes) {
+        return franchiseRoutes
+                .and(branchRoutes)
+                .and(productRoutes);
     }
 }
