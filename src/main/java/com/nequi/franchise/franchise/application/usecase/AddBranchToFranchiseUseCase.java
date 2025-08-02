@@ -1,15 +1,19 @@
 package com.nequi.franchise.franchise.application.usecase;
 
-import com.nequi.franchise.franchise.entrypoint.rest.dto.CreateBranchRequest;
-import com.nequi.franchise.franchise.entrypoint.rest.dto.FranchiseResponse;
 import com.nequi.franchise.franchise.domain.factory.FranchiseFactory;
 import com.nequi.franchise.franchise.domain.model.Branch;
+import com.nequi.franchise.franchise.domain.model.Franchise;
 import com.nequi.franchise.franchise.domain.repository.FranchiseRepository;
+import com.nequi.franchise.franchise.entrypoint.rest.dto.BranchResponse;
+import com.nequi.franchise.franchise.entrypoint.rest.dto.CreateBranchRequest;
 import com.nequi.franchise.franchise.entrypoint.rest.exception.FranchiseNotFoundException;
+import com.nequi.franchise.franchise.infrastructure.mapper.BranchResponseMapper;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
+
+import static com.nequi.franchise.franchise.entrypoint.rest.exception.ExceptionMessage.FRANCHISE_NOT_FOUND;
 
 @Service
 public class AddBranchToFranchiseUseCase {
@@ -22,16 +26,18 @@ public class AddBranchToFranchiseUseCase {
         this.franchiseFactory = franchiseFactory;
     }
 
-    public Mono<FranchiseResponse> execute(String franchiseId, CreateBranchRequest request) {
+    public Mono<BranchResponse> execute(String franchiseId, CreateBranchRequest request) {
         return franchiseRepository.findById(franchiseId)
-                .switchIfEmpty(Mono.error(new FranchiseNotFoundException("Franquicia no encontrada")))
-                .map(franchise -> {
-                    Branch newBranch = franchiseFactory.createBranch(UUID.randomUUID().toString(), request.getName());
+                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(FRANCHISE_NOT_FOUND.getMessage())))
+                .flatMap(franchise -> {
+                    Branch newBranch = franchiseFactory.createBranch(
+                            UUID.randomUUID().toString(),
+                            request.getName()
+                    );
                     franchise.addBranch(newBranch);
-                    return franchise;
+                    return franchiseRepository.save(franchise)
+                            .thenReturn(newBranch);
                 })
-                .flatMap(franchiseRepository::save)
-                .map(franquicia -> new FranchiseResponse(franquicia.getId(), franquicia.getName().getValue(), franquicia.getBranches()));
-
+                .map(branch -> BranchResponseMapper.toResponse(branch, franchiseId));
     }
 }
