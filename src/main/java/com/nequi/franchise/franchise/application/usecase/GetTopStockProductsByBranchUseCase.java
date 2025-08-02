@@ -3,6 +3,7 @@ package com.nequi.franchise.franchise.application.usecase;
 import com.nequi.franchise.franchise.domain.repository.FranchiseRepository;
 import com.nequi.franchise.franchise.domain.service.ProductStockService;
 import com.nequi.franchise.franchise.entrypoint.rest.dto.TopProductResponse;
+import com.nequi.franchise.franchise.entrypoint.rest.exception.FranchiseNotFoundException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import java.util.List;
@@ -22,7 +23,7 @@ public class GetTopStockProductsByBranchUseCase {
 
     public Mono<List<TopProductResponse>> execute(String franchiseId) {
         return franchiseRepository.findById(franchiseId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException(FRANCHISE_NOT_FOUND.getMessage())))
+                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(FRANCHISE_NOT_FOUND.getMessage())))
                 .map(productStockService::findTopStockPerBranch)
                 .map(map -> map.entrySet().stream()
                         .map(entry -> new TopProductResponse(

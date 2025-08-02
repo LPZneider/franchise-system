@@ -1,19 +1,15 @@
 package com.nequi.franchise.franchise.entrypoint.rest.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
+@Data
 public class TopProductResponse {
-
     private String branchId;
     private String productId;
     private String productName;
     private int stock;
 
-    public TopProductResponse() {
-    }
+    public TopProductResponse() {}
 
     public TopProductResponse(String branchId, String productId, String productName, int stock) {
         this.branchId = branchId;
@@ -21,5 +17,4 @@ public class TopProductResponse {
         this.productName = productName;
         this.stock = stock;
     }
-
 }
