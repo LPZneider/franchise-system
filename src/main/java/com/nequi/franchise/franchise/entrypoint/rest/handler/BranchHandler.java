@@ -2,6 +2,7 @@ package com.nequi.franchise.franchise.entrypoint.rest.handler;
 
 import com.nequi.franchise.franchise.application.usecase.AddProductToBranchUseCase;
 import com.nequi.franchise.franchise.application.usecase.RemoveProductFromBranchUseCase;
+import com.nequi.franchise.franchise.application.usecase.UpdateBranchNameUseCase;
 import com.nequi.franchise.franchise.application.usecase.UpdateProductStockUseCase;
 import com.nequi.franchise.franchise.entrypoint.rest.dto.CreateProductRequest;
 import org.springframework.http.MediaType;
@@ -15,13 +16,16 @@ public class BranchHandler {
     private final AddProductToBranchUseCase addProductToBranchUseCase;
     private final UpdateProductStockUseCase updateProductStockUseCase;
     private final RemoveProductFromBranchUseCase removeProductFromBranchUseCase;
+    private final UpdateBranchNameUseCase updateBranchNameUseCase;
 
     public BranchHandler(AddProductToBranchUseCase addProductToBranchUseCase,
                         UpdateProductStockUseCase updateProductStockUseCase,
-                        RemoveProductFromBranchUseCase removeProductFromBranchUseCase) {
+                        RemoveProductFromBranchUseCase removeProductFromBranchUseCase,
+                        UpdateBranchNameUseCase updateBranchNameUseCase) {
         this.addProductToBranchUseCase = addProductToBranchUseCase;
         this.updateProductStockUseCase = updateProductStockUseCase;
         this.removeProductFromBranchUseCase = removeProductFromBranchUseCase;
+        this.updateBranchNameUseCase = updateBranchNameUseCase;
     }
 
     public Mono<ServerResponse> addProduct(ServerRequest request) {
@@ -51,5 +55,15 @@ public class BranchHandler {
         String productId = request.pathVariable("productId");
         return removeProductFromBranchUseCase.execute(franchiseId, branchId, productId)
                 .flatMap(franchiseResponse -> ServerResponse.noContent().build());
+    }
+
+    public Mono<ServerResponse> updateBranchName(ServerRequest request) {
+        String franchiseId = request.pathVariable("franchiseId");
+        String branchId = request.pathVariable("branchId");
+        return request.bodyToMono(String.class)
+                .flatMap(newName -> updateBranchNameUseCase.execute(franchiseId, branchId, newName))
+                .flatMap(franchiseResponse -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(franchiseResponse));
     }
 }
