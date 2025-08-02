@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import static org.springframework.web.reactive.function.server.RequestPredicates.*;
 
 @Configuration
 public class FranchiseRouter {
@@ -28,6 +27,7 @@ public class FranchiseRouter {
         return RouterFunctions.route()
                 .POST("/franchises/{franchiseId}/branches/{branchId}/products", handler::addProduct)
                 .PUT("/franchises/{franchiseId}/branches/{branchId}/products/{productId}/stock", handler::updateProductStock)
+                .PUT("/franchises/{franchiseId}/branches/{branchId}/name", handler::updateBranchName)
                 .DELETE("/franchises/{franchiseId}/branches/{branchId}/products/{productId}", handler::removeProduct)
                 .build();
     }
@@ -36,6 +36,13 @@ public class FranchiseRouter {
     public RouterFunction<ServerResponse> topProductsRoutes(ProductHandler handler) {
         return RouterFunctions.route()
             .GET("/franchises/{franchiseId}/top-products", handler::getTopStockProductsByBranch)
+            .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> productRoutes(ProductHandler handler) {
+        return RouterFunctions.route()
+            .PUT("/franchises/{franchiseId}/branches/{branchId}/products/{productId}/name", handler::updateProductName)
             .build();
     }
 }
