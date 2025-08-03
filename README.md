@@ -1,10 +1,20 @@
 # 🏢 Franchise Management System
 
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Spring WebFlux](https://img.shields.io/badge/Spring%20WebFlux-Reactive-blue.svg)](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Reactive-green.svg)](https://www.mongodb.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green.svg)](https://www.mongodb.com/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
-[![Java](https://img.shields.io/badge/Java-17+-orange.svg)](https://openjdk.java.net/)
+[![Java](https://img.shields.io/badge/Java-21+-orange.svg)](https://openjdk.java.net/)
+[![AWS Lightsail](https://img.shields.io/badge/AWS%20Lightsail-Deployed-orange.svg)](http://44.201.59.135:8001/api/v1/franchises)
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-lpzneider%2Ffranchise--system-blue.svg)](https://hub.docker.com/r/lpzneider/franchise-system)
+
+## 🌐 Acceso en Vivo
+
+🚀 **API en Producción**: [http://44.201.59.135:8001/api/v1/franchises](http://44.201.59.135:8001/api/v1/franchises)
+
+📦 **Imagen Docker**: `lpzneider/franchise-system:latest`
+
+El sistema está desplegado en **AWS Lightsail** usando Docker containers y está disponible públicamente para pruebas y demo.
 
 ## 📋 Descripción
 
@@ -83,31 +93,6 @@ Sistema de gestión de franquicias desarrollado con **Spring Boot WebFlux** que 
     └─────────────────────────────────────────────────────────┘
 ```
 
-### 🔄 Flujo de una Petición
-
-```
-👤 Cliente                  🌐 API REST                 📋 Caso de Uso
-    │                           │                           │
-    │ POST /franchises          │                           │
-    │ ────────────────────────► │ FranchiseHandler          │
-    │                           │ ──────────────────────►   │ CreateFranchise
-    │                           │                           │ UseCase
-    │                           │                           │
-    ▼                           ▼                           ▼
-
-🏛️ Dominio                  🔧 Infraestructura         🗄️ MongoDB
-    │                           │                           │
-    │ Franchise + Name          │                           │
-    │ ──────────────────────► │ Mapper                      │
-    │                           │ ──────────────────────►   │ franchises
-    │                           │ FranchiseEntity           │ collection
-    │                           │                           │
-    │ ◄────────────────────── │ ◄────────────────────── │
-    ▼                           ▼                           ▼
-
-    Response (Mono<FranchiseResponse>)
-```
-
 ## 🚀 Funcionalidades Implementadas
 
 ### Core Features
@@ -126,23 +111,32 @@ Sistema de gestión de franquicias desarrollado con **Spring Boot WebFlux** que 
 ## 🛠️ Stack Tecnológico
 
 ### Backend
-- **Java 17+** - LTS con mejoras de performance
-- **Spring Boot 3.4.0** - Framework principal
-- **Spring WebFlux** - Programación reactiva
-- **Spring Data Reactive MongoDB** - Persistencia reactiva
+- **Java 21** - LTS con mejoras de performance y nuevas características
+- **Spring Boot 3.5.4** - Framework principal con soporte reactivo
+- **Spring WebFlux** - Programación reactiva no-bloqueante
+- **Spring Data Reactive MongoDB** - Persistencia reactiva NoSQL
 - **Project Reactor** - Reactive Streams implementation
+- **Spring Boot Validation** - Validación de DTOs y entidades
+- **Spring AOP** - Programación orientada a aspectos
 
 ### Testing
-- **JUnit 5** - Framework de testing
-- **WebTestClient** - Testing reactivo de endpoints
-- **SpringBootTest** - Tests de integración
+- **JUnit 5** - Framework de testing moderno
+- **WebTestClient** - Testing reactivo de endpoints HTTP
+- **SpringBootTest** - Tests de integración completos
+- **Reactor Test** - Testing específico para streams reactivos
 - **Cobertura 100%** de endpoints funcionales
 
 ### Tools & Libraries
-- **Lombok** - Reducción de boilerplate
-- **MapStruct** - Mapeo automático de objetos
-- **AspectJ** - Logging transversal
-- **Maven** - Gestión de dependencias
+- **Lombok 1.18.30** - Reducción de boilerplate code
+- **MapStruct 1.5.5.Final** - Mapeo automático de objetos type-safe
+- **Maven 3.11.0** - Gestión de dependencias y build
+- **MongoDB 7.0** - Base de datos NoSQL orientada a documentos
+
+### Infrastructure & Deployment
+- **Docker** - Containerización con multi-stage builds
+- **Docker Compose** - Orquestación de servicios
+- **Docker Hub** - Registro público de imágenes (`lpzneider/franchise-system`)
+- **AWS Lightsail** - Plataforma de despliegue en la nube
 
 ## 📊 Comparativa con Otras Arquitecturas
 
@@ -376,6 +370,115 @@ management.endpoints.web.exposure.include=health,info,metrics
 ```
 
 ### 🚀 Despliegue en Producción
+
+#### AWS Lightsail - Despliegue en la Nube
+
+El sistema está desplegado en **AWS Lightsail** usando Docker containers. Aquí están los pasos para replicar el despliegue:
+
+##### 1. Configurar instancia en AWS Lightsail
+```bash
+# Crear instancia Ubuntu 20.04 LTS
+# Configurar puertos: 22 (SSH), 8001 (API), 27017 (MongoDB)
+# Conectar por SSH a la instancia
+```
+
+##### 2. Instalar Docker y Docker Compose
+```bash
+# Actualizar sistema
+sudo apt update && sudo apt upgrade -y
+
+# Instalar Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+
+# Instalar Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Reiniciar sesión para aplicar cambios de grupo
+exit
+```
+
+##### 3. Desplegar usando Docker Hub
+```bash
+# Crear directorio del proyecto
+mkdir franchise-system && cd franchise-system
+
+# Crear docker-compose.yml (usa imagen pública de Docker Hub)
+wget https://raw.githubusercontent.com/LPZneider/franchise-system/main/docker-compose.yml
+
+# O crear manualmente con la imagen pública:
+cat > docker-compose.yml << EOF
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: franchise-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: franchise_system
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - franchise-network
+
+  franchise-app:
+    image: lpzneider/franchise-system:latest  # Imagen pública en Docker Hub
+    container_name: franchise-system
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://admin:admin123@mongodb:27017/franchise_system?authSource=admin
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - mongodb
+    networks:
+      - franchise-network
+
+volumes:
+  mongodb_data:
+networks:
+  franchise-network:
+EOF
+
+# Levantar servicios
+docker-compose up -d
+```
+
+##### 4. Verificar despliegue
+```bash
+# Verificar contenedores
+docker-compose ps
+
+# Verificar logs
+docker-compose logs -f franchise-app
+
+# Probar API
+curl http://localhost:8001/api/v1/franchises
+```
+
+##### 5. Configurar acceso público
+```bash
+# En el panel de AWS Lightsail:
+# - Abrir puerto 8001 en el firewall
+# - Configurar IP estática
+# - La API estará disponible en: http://TU-IP-PUBLICA:8001/api/v1/franchises
+
+# URL actual de producción: http://44.201.59.135:8001/api/v1/franchises
+```
+
+##### Ventajas del despliegue con Docker Hub:
+- ✅ **Sin build local**: Usa imagen pre-construida `lpzneider/franchise-system:latest`
+- ✅ **Despliegue rápido**: Solo `docker-compose up -d`
+- ✅ **Actualización fácil**: `docker-compose pull && docker-compose up -d`
+- ✅ **Rollback simple**: Cambiar tag de imagen y redesplegar
+- ✅ **Consistencia**: Misma imagen en dev, staging y prod
 
 #### Variables de Entorno Requeridas
 ```bash

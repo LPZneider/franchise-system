@@ -34,7 +34,6 @@ public class FranchiseSystemApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Eliminar colección existente
         mongoTemplate.dropCollection("franchise").subscribe();
 
         Flux.range(1, 10)
@@ -53,15 +52,8 @@ public class FranchiseSystemApplication implements CommandLineRunner {
                             List.of(branch1, branch2)
                     );
                 })
-                .map(p -> {
-                    System.out.println(p);
-                    return p;
-                })
                 .map(FranchiseMapper::toDomain)
-                .flatMap(franchiseEntity -> {
-                    log.info("Inserting Franchise: {}", franchiseEntity.toString());
-                    return franchiseRepository.save(franchiseEntity);
-                })
+                .flatMap(franchiseRepository::save)
                 .subscribe(franchise ->
                         log.info("Franchise Inserted: {} with {} branches",
                                 franchise.getName(),
