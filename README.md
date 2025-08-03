@@ -275,8 +275,7 @@ services:
       retries: 5
 
   franchise-app:
-    build: .
-    container_name: franchise-system
+    image: lpzneider/franchise-system:latest
     restart: always
     ports:
       - "8001:8001"
