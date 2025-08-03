@@ -24,7 +24,7 @@ services:
       start_period: 5s
 
   franchise-app:
-    build: .
+    image: lpzneider/franchise-system:latest
     container_name: franchise-system
     restart: always
     ports:
