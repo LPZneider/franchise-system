@@ -108,6 +108,34 @@ Sistema de gestión de franquicias desarrollado con **Spring Boot WebFlux** que 
 - ✅ **Actualizar nombre sucursal** (`PATCH /api/v1/franchises/{franchiseId}/branches/{branchId}`)
 - ✅ **Actualizar nombre producto** (`PATCH /api/v1/franchises/{franchiseId}/branches/{branchId}/products/{productId}`)
 
+## 📚 Documentación de la API
+
+### 📦 Colección Postman
+📁 **Ubicación**: [docs/postman/Franchise Management System.postman_collection.json](docs/postman/Franchise%20Management%20System.postman_collection.json)
+
+#### Cómo usar la colección:
+1. **Descargar** la colección desde el repositorio
+2. **Abrir Postman** → Import → Upload Files
+3. **Seleccionar** el archivo `.postman_collection.json`
+4. **Configurar variables de entorno**:
+   - `baseURL`: `http://localhost:8001`
+   - `baseURL`: `http://44.201.59.135:8001`
+
+#### Endpoints incluidos en la colección:
+- 🏢 **Franquicias**: CRUD completo + listado
+- 🏪 **Sucursales**: Agregar y actualizar nombres
+- 📦 **Productos**: CRUD completo + gestión de stock
+- 📊 **Consultas**: Top productos por stock
+
+### 🧪 Endpoints de Prueba Rápida
+```bash
+# Health Check
+curl http://44.201.59.135:8001/actuator/health
+
+# Listar franquicias
+curl http://44.201.59.135:8001/api/v1/franchises
+```
+
 ## 🛠️ Stack Tecnológico
 
 ### Backend
@@ -118,6 +146,7 @@ Sistema de gestión de franquicias desarrollado con **Spring Boot WebFlux** que 
 - **Project Reactor** - Reactive Streams implementation
 - **Spring Boot Validation** - Validación de DTOs y entidades
 - **Spring AOP** - Programación orientada a aspectos
+- **Spring Boot Actuator** - Monitoreo y health checks
 
 ### Testing
 - **JUnit 5** - Framework de testing moderno
