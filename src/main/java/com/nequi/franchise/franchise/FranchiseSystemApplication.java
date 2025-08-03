@@ -34,7 +34,7 @@ public class FranchiseSystemApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Eliminar colección existente (opcional)
+        // Eliminar colección existente
         mongoTemplate.dropCollection("franchise").subscribe();
 
         Flux.range(1, 10)
